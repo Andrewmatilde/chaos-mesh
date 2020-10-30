@@ -1,0 +1,15 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: httpchaos-sample
+  namespace: chaos-testing
+spec:
+  action: delay
+  duration: 300ms
+  mode: one
+  percent: "100"
+  selector: # pods where to inject chaos actions
+    namespaces:
+      - chaos-testing
+    labelSelectors:
+      "name": "shell"

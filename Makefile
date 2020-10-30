@@ -214,32 +214,32 @@ image-build-base:
 	DOCKER_BUILDKIT=0 docker build --ulimit nofile=65536:65536 -t pingcap/chaos-build-base ${DOCKER_BUILD_ARGS} images/build-base
 
 image-chaos-daemon: image-binary
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-daemon:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-daemon
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-daemon:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-daemon
 
 image-chaos-mesh: image-binary
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-mesh:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-mesh
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-mesh:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-mesh
 
 image-chaos-fs: image-binary
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-fs:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaosfs
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-fs:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaosfs
 
 image-chaos-scripts: image-binary
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-scripts:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-scripts
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-scripts:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-scripts
 
 image-chaos-dashboard: image-binary
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-dashboard:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-dashboard
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-dashboard:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} images/chaos-dashboard
 
 image-chaos-kernel:
-	docker build -t ${DOCKER_REGISTRY_PREFIX}pingcap/chaos-kernel:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} --build-arg MAKE_JOBS=${MAKE_JOBS} --build-arg MIRROR=${UBUNTU_MIRROR} images/chaos-kernel
+	docker build -t ${DOCKER_REGISTRY_PREFIX}chaos-kernel:${IMAGE_TAG} ${DOCKER_BUILD_ARGS} --build-arg MAKE_JOBS=${MAKE_JOBS} --build-arg MIRROR=${UBUNTU_MIRROR} images/chaos-kernel
 
 docker-push:
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-mesh:${IMAGE_TAG}"
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-dashboard:${IMAGE_TAG}"
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-fs:${IMAGE_TAG}"
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-daemon:${IMAGE_TAG}"
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-scripts:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-mesh:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-dashboard:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-fs:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-daemon:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-scripts:${IMAGE_TAG}"
 
 docker-push-chaos-kernel:
-	docker push "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-kernel:${IMAGE_TAG}"
+	docker push "${DOCKER_REGISTRY_PREFIX}chaos-kernel:${IMAGE_TAG}"
 
 $(GOBIN)/controller-gen:
 	$(GO) get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5
@@ -294,10 +294,10 @@ endif
 	[ -d test/image/e2e/chaos-mesh ] && rm -r test/image/e2e/chaos-mesh || true
 	cp -r helm/chaos-mesh test/image/e2e
 	cp -r manifests test/image/e2e
-	docker build -t "${DOCKER_REGISTRY_PREFIX}pingcap/chaos-mesh-e2e:${IMAGE_TAG}" test/image/e2e
+	docker build -t "${DOCKER_REGISTRY_PREFIX}chaos-mesh-e2e:${IMAGE_TAG}" test/image/e2e
 
 image-e2e-helper:
-	docker build -t "${DOCKER_REGISTRY_PREFIX}pingcap/e2e-helper:${IMAGE_TAG}" test/cmd/e2e_helper
+	docker build -t "${DOCKER_REGISTRY_PREFIX}e2e-helper:${IMAGE_TAG}" test/cmd/e2e_helper
 
 ensure-kind:
 	@echo "ensuring kind"
@@ -329,3 +329,10 @@ install-local-coverage-tools:
 	manager chaosfs chaosdaemon chaos-dashboard ensure-all \
 	dashboard dashboard-server-frontend gosec-scan \
 	proto
+
+kind:
+	kind load docker-image "${DOCKER_REGISTRY_PREFIX}chaos-mesh:${IMAGE_TAG}"
+	kind load docker-image "${DOCKER_REGISTRY_PREFIX}chaos-dashboard:${IMAGE_TAG}"
+	kind load docker-image "${DOCKER_REGISTRY_PREFIX}chaos-fs:${IMAGE_TAG}"
+	kind load docker-image "${DOCKER_REGISTRY_PREFIX}chaos-daemon:${IMAGE_TAG}"
+	kind load docker-image "${DOCKER_REGISTRY_PREFIX}chaos-scripts:${IMAGE_TAG}"

@@ -73,6 +73,10 @@ spec:
                 - name
                 type: object
               type: array
+            http_api:
+              description: 'HttpApi defines the http api injection errors work for.
+                default: "GET /".'
+              type: string
             mode:
               description: 'Mode defines the mode to run chaos action. Supported mode:
                 one / all / fixed / fixed-percent / random-max-percent'

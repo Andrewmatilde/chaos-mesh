@@ -92,7 +92,7 @@ func (s *daemonServer) SetTcs(ctx context.Context, in *pb.TcsRequest) (*empty.Em
 	// Todo: better implements of tc_server for new chaos
 	if in.UseFwMark {
 		parentId := 0
-		bandNum := len(in.Tcs)
+		bandNum := len(in.Tcs) + 3 // 1
 		err = client.addPrio(parentId, bandNum)
 		parentId++
 		defaultClassNum := 3
@@ -136,7 +136,7 @@ func (s *daemonServer) SetTcs(ctx context.Context, in *pb.TcsRequest) (*empty.Em
 	//  tc qdisc add dev eth0 parent 3:1 handle 4: sfq
 	//  tc qdisc add dev eth0 parent 3:2 handle 5: sfq
 	//  tc qdisc add dev eth0 parent 3:3 handle 6: sfq
-	//  tc qdisc add dev eth0 parent 3:4 handle 7: netem delay 50000
+	//
 	//  tc filter add dev eth0 parent 3: basic match ipset(A dst) classid 3:4
 	//  tc qdisc add dev eth0 parent 3:5 handle 8: netem delay 100000
 	//  tc filter add dev eth0 parent 3: basic match ipset(B dst) classid 3:5
@@ -276,10 +276,13 @@ func (c *tcClient) addPrio(parent int, band int) error {
 	cmd := bpm.DefaultProcessBuilder("tc", strings.Split(args, " ")...).SetNetNS(c.nsPath).SetContext(c.ctx).Build()
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Error(err, "error while adding prio bands")
 		return encodeOutputToError(output, err)
 	}
 
+	log.Info("adding index sfq", "parent", parent)
 	for index := 1; index <= 3; index++ {
+		log.Info("adding index sfq line", "parent", parent, "index", index)
 		args := fmt.Sprintf("qdisc add dev eth0 parent %d:%d handle %d: sfq", parent+1, index, parent+1+index)
 		cmd := bpm.DefaultProcessBuilder("tc", strings.Split(args, " ")...).SetNetNS(c.nsPath).SetContext(c.ctx).Build()
 		output, err := cmd.CombinedOutput()

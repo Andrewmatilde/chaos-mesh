@@ -18,10 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/empty"
-
 	"github.com/chaos-mesh/chaos-mesh/pkg/bpm"
 	pb "github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/pb"
+	"github.com/golang/protobuf/ptypes/empty"
 )
 
 const (
@@ -81,7 +80,7 @@ func (iptables *iptablesClient) setIptablesChain(chain *pb.Chain) error {
 				rule = fmt.Sprintf(rule, ipset)
 				err := iptables.ensureRule(&iptablesChain{
 					Name: chain.ChainName,
-				}, rule)
+				}, rule, chain.Table)
 				if err != nil {
 					log.Error(err, "error while add iptables chains")
 					return err
@@ -90,17 +89,21 @@ func (iptables *iptablesClient) setIptablesChain(chain *pb.Chain) error {
 		} else {
 			err := iptables.ensureRule(&iptablesChain{
 				Name: chain.ChainName,
-			}, rule)
+			}, rule, chain.Table)
 			if err != nil {
 				log.Error(err, "error while add iptables chains")
 				return err
 			}
 		}
 	case pb.Chain_DELETE:
+		var rule string
+		if chain.Table != "" {
+			rule = fmt.Sprintf("-t %s ", chain.Table)
+		}
 		log.Info("Delete Chain ", chain.ChainName)
 		err := iptables.flushIptablesChain(&iptablesChain{
 			Name: chain.ChainName,
-			Rule: "",
+			Rule: rule,
 		})
 		if err != nil {
 			log.Error(err, "error while add iptables chains")
@@ -108,7 +111,7 @@ func (iptables *iptablesClient) setIptablesChain(chain *pb.Chain) error {
 		}
 		err = iptables.ensureRule(&iptablesChain{
 			Name: chain.ChainName,
-		}, fmt.Sprintf("-X %s ", chain.ChainName))
+		}, rule+fmt.Sprintf("-X %s ", chain.ChainName), chain.Table)
 	default:
 		return fmt.Errorf("error no command in iptables chains")
 	}
@@ -143,9 +146,6 @@ func parseAddChain(chain *pb.Chain) (string, error) {
 	if chain.Probability != "" {
 		rule += fmt.Sprintf("--probability %s ", chain.Dport)
 	}
-	if chain.MarkIndex != "" {
-		rule += fmt.Sprintf("--set-mark %s ", chain.MarkIndex)
-	}
 	if chain.IpsetsName != "" {
 		var matchPart string
 		if chain.Direction == pb.Chain_INPUT {
@@ -166,9 +166,12 @@ func parseAddChain(chain *pb.Chain) (string, error) {
 		}
 	}
 	if chain.Action != "" {
-		rule += fmt.Sprintf("-j %s ", chain.Action)
+		rule += fmt.Sprintf("-j %s", chain.Action)
 	} else {
 		return "", fmt.Errorf("add chain must have chain Action like ACCEPT or a Chain name as Action")
+	}
+	if chain.MarkIndex != "" {
+		rule += fmt.Sprintf(" --set-mark %s", chain.MarkIndex)
 	}
 	return rule, nil
 }
@@ -192,7 +195,7 @@ func buildIptablesClient(ctx context.Context, nsPath string) iptablesClient {
 
 // createNewChain will cover existing chain
 func (iptables *iptablesClient) createNewChain(chain *iptablesChain) error {
-	cmd := bpm.DefaultProcessBuilder(iptablesCmd, strings.Split(chain.Rule+" -w -N "+chain.Name, " ")...).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
+	cmd := bpm.DefaultProcessBuilder(iptablesCmd, strings.Split(chain.Rule+"-w -N "+chain.Name, " ")...).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
 	out, err := cmd.CombinedOutput()
 
 	if (err == nil && len(out) == 0) ||
@@ -207,8 +210,13 @@ func (iptables *iptablesClient) createNewChain(chain *iptablesChain) error {
 	return encodeOutputToError(out, err)
 }
 
-func (iptables *iptablesClient) ensureRule(chain *iptablesChain, rule string) error {
-	cmd := bpm.DefaultProcessBuilder(iptablesCmd, "-w", "-S", chain.Name).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
+func (iptables *iptablesClient) ensureRule(chain *iptablesChain, rule string, table string) error {
+	var cmd *bpm.ManagedProcess
+	if table != "" {
+		cmd = bpm.DefaultProcessBuilder(iptablesCmd, "-t", table, "-w", "-S", chain.Name).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
+	} else {
+		cmd = bpm.DefaultProcessBuilder(iptablesCmd, "-w", "-S", chain.Name).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
+	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return encodeOutputToError(out, err)
@@ -230,7 +238,7 @@ func (iptables *iptablesClient) ensureRule(chain *iptablesChain, rule string) er
 }
 
 func (iptables *iptablesClient) flushIptablesChain(chain *iptablesChain) error {
-	cmd := bpm.DefaultProcessBuilder(iptablesCmd, "-w", "-F", chain.Name).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
+	cmd := bpm.DefaultProcessBuilder(iptablesCmd, strings.Split(chain.Rule+"-w -F "+chain.Name, " ")...).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return encodeOutputToError(out, err)

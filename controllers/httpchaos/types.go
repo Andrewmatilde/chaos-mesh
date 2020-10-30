@@ -150,6 +150,7 @@ func (r *Reconciler) applyPod(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 //4: if abort: -A HTTP-CHAOS-INPUT --probability percent -j DROP
 //5: if abort: -A HTTP-CHAOS-OUTPUT --probability percent -j DROP
 func (r *Reconciler) SetAbort(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.HTTPChaos) error {
+	r.Log.Info("Try to Set Abort on pod", "namespace", pod.Namespace, "name", pod.Name)
 	var chains []*pb.Chain
 	//1: -N HTTP-CHAOS-INPUT, -N HTTP-CHAOS-OUTPUT
 	inputFilterName := "HTTP-CHAOS-INPUT"
@@ -178,7 +179,7 @@ func (r *Reconciler) SetAbort(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 	//3: -A OUTPUT -sport container_ports -j HTTP-CHAOS-OUTPUT
 	chains = append(chains, &pb.Chain{
 		Command:   pb.Chain_ADD,
-		ChainName: "OUPUT",
+		ChainName: "OUTPUT",
 		Sport:     strings.Join(ports, ","),
 		Action:    outputFilterName,
 	})
@@ -196,6 +197,7 @@ func (r *Reconciler) SetAbort(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 		Action:      "DROP",
 		Probability: chaos.Spec.Percent,
 	})
+	r.Log.Info("Try to Set IptablesChains on pod", "namespace", pod.Namespace, "name", pod.Name)
 	return iptables.SetIptablesChains(ctx, r.Client, pod, chains)
 }
 
@@ -219,19 +221,19 @@ func (r *Reconciler) SetDelay(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 	chains = append(chains, &pb.Chain{
 		Table:     "mangle",
 		Command:   pb.Chain_ADD,
-		ChainName: "OUPUT",
+		ChainName: "OUTPUT",
 		Action:    outputFilterName,
 	})
 
 	markInit := 1
 
-	//3: -A HTTP-CHAOS-OUTPUT --probability percent --set-mark MarkIndex -j MARK
+	//3: -t mangle -A HTTP-CHAOS-OUTPUT --probability percent --set-mark MarkIndex -j MARK
 	chains = append(chains, &pb.Chain{
-		Command:     pb.Chain_ADD,
-		ChainName:   outputFilterName,
-		Action:      "MARK",
-		MarkIndex:   strconv.Itoa(markInit),
-		Probability: chaos.Spec.Percent,
+		Table:     "mangle",
+		Command:   pb.Chain_ADD,
+		ChainName: outputFilterName,
+		Action:    "MARK",
+		MarkIndex: strconv.Itoa(markInit),
 	})
 
 	//4
