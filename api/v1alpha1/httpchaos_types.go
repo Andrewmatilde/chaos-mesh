@@ -90,11 +90,15 @@ type HTTPChaosSpec struct {
 	// +optional
 	Percent string `json:"percent,omitempty"`
 
+	// HttpMethod defines the http method injection errors work for.
+	// default: "GET".
+	// +optional
+	HttpMethod string `json:"http_method,omitempty"`
+
 	// HttpApi defines the http api injection errors work for.
-	// default: "GET /".
+	// default: "/".
 	// +optional
 	HttpApi string `json:"http_api,omitempty"`
-
 	// Specifies how the header match will be performed to route the request.
 	Headers []Matcher `json:"headers,omitempty"`
 }

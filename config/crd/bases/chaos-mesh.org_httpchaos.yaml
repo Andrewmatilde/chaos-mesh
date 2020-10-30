@@ -77,7 +77,11 @@ spec:
               type: array
             http_api:
               description: 'HttpApi defines the http api injection errors work for.
-                default: "GET /".'
+                default: "/".'
+              type: string
+            http_method:
+              description: 'HttpApi defines the http method injection errors work for.
+                default: "GET".'
               type: string
             mode:
               description: 'Mode defines the mode to run chaos action. Supported mode:

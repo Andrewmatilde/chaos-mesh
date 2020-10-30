@@ -8,6 +8,8 @@ spec:
   duration: 300ms
   mode: one
   percent: "100"
+  http_method: "GET"
+  http_api: "/api-test"
   selector: # pods where to inject chaos actions
     namespaces:
       - chaos-testing
