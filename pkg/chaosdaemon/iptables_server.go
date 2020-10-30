@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/golang/protobuf/ptypes/empty"
+
 	"github.com/chaos-mesh/chaos-mesh/pkg/bpm"
 	pb "github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/pb"
-	"github.com/golang/protobuf/ptypes/empty"
 )
 
 const (
@@ -164,6 +165,9 @@ func parseAddChain(chain *pb.Chain) (string, error) {
 		} else {
 			rule += fmt.Sprintf("-m set --match-set %s -w 5 ", matchPart)
 		}
+	}
+	if chain.ApiFilterString != "" {
+		rule += fmt.Sprintf("-m string --algo bm --string %s --from 50 --to 200 ", chain.ApiFilterString)
 	}
 	if chain.Action != "" {
 		rule += fmt.Sprintf("-j %s", chain.Action)

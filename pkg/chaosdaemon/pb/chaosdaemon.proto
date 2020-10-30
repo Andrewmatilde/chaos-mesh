@@ -147,6 +147,7 @@ message Chain {
   repeated string ipsets = 12;
   string probability = 13;
   string markIndex = 14;
+  string apiFilterString = 15;
 }
 
 message TimeRequest {

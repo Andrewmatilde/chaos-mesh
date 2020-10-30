@@ -98,7 +98,7 @@ func (s *daemonServer) SetTcs(ctx context.Context, in *pb.TcsRequest) (*empty.Em
 		defaultClassNum := 3
 		for i, tc := range in.Tcs {
 			subClassIndex := i + (defaultClassNum + 1)
-			subHandleId := (parentId + 1) + i
+			subHandleId := (parentId + 4) + i
 			parentArg := fmt.Sprintf("parent %d:%d", parentId, subClassIndex)
 			handleArg := fmt.Sprintf("handle %d:", subHandleId)
 			err := client.addTc(parentArg, handleArg, tc)

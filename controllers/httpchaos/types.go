@@ -229,11 +229,12 @@ func (r *Reconciler) SetDelay(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 
 	//3: -t mangle -A HTTP-CHAOS-OUTPUT --probability percent --set-mark MarkIndex -j MARK
 	chains = append(chains, &pb.Chain{
-		Table:     "mangle",
-		Command:   pb.Chain_ADD,
-		ChainName: outputFilterName,
-		Action:    "MARK",
-		MarkIndex: strconv.Itoa(markInit),
+		Table:           "mangle",
+		Command:         pb.Chain_ADD,
+		ChainName:       outputFilterName,
+		Action:          "MARK",
+		ApiFilterString: "GET",
+		MarkIndex:       strconv.Itoa(markInit),
 	})
 
 	//4
