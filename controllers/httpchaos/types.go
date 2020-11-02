@@ -233,7 +233,7 @@ func (r *Reconciler) SetDelay(ctx context.Context, pod *v1.Pod, chaos *v1alpha1.
 		Command:         pb.Chain_ADD,
 		ChainName:       outputFilterName,
 		Action:          "MARK",
-		ApiFilterString: chaos.Spec.HttpMethod + " " + chaos.Spec.HttpApi,
+		ApiFilterString: chaos.Spec.HttpMethod + "\\b" + chaos.Spec.HttpApi,
 		MarkIndex:       strconv.Itoa(markInit),
 	})
 

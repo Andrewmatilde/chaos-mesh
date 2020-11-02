@@ -232,6 +232,13 @@ func (iptables *iptablesClient) ensureRule(chain *iptablesChain, rule string, ta
 	}
 
 	// TODO: lock on every container but not on chaos-daemon's `/run/xtables.lock`
+	rules := strings.Split("-w "+rule, " ")
+	for i, s := range rules {
+		if strings.Contains(s, "\\b") {
+			log.Info("Replace string : %s", s)
+			rules[i] = strings.Replace(s, "\\b", " ", 1)
+		}
+	}
 	cmd = bpm.DefaultProcessBuilder(iptablesCmd, strings.Split("-w "+rule, " ")...).SetNetNS(iptables.nsPath).SetContext(iptables.ctx).Build()
 	out, err = cmd.CombinedOutput()
 	if err != nil {
