@@ -30,7 +30,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/chaos-mesh/chaos-mesh/pkg/bpm"
-	pb "github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/pb"
+	"github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/pb"
 	"github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/tproxyconfig"
 )
 
@@ -72,25 +72,25 @@ func (t *stdioTransport) RoundTrip(req *http.Request) (resp *http.Response, err 
 }
 
 func (s *DaemonServer) ApplyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaosRequest) (*pb.ApplyHttpChaosResponse, error) {
-	log := s.getLoggerFromContext(ctx)
-	log.Info("applying http chaos", "in.InstanceUid", in.InstanceUid)
+	logger := s.getLoggerFromContext(ctx)
+	logger.Info("applying http chaos", "in.InstanceUid", in.InstanceUid)
 
 	if in.InstanceUid == "" {
-		log.Info("instance uid is empty, try to get it from background process manager")
+		logger.Info("instance uid is empty, try to get it from background process manager")
 		if uid, ok := s.backgroundProcessManager.GetUID(bpm.ProcessPair{Pid: int(in.Instance), CreateTime: in.StartTime}); ok {
-			log.Info("get instance uid from background process manager", "uid", uid)
+			logger.Info("get instance uid from background process manager", "uid", uid)
 			in.InstanceUid = uid
 		}
 	}
 
 	if _, ok := s.backgroundProcessManager.GetPipes(in.InstanceUid); !ok {
-		log.Info("instance not found, create a new one")
+		logger.Info("instance not found, create a new one")
 		if in.InstanceUid != "" {
 			// chaos daemon may restart, create another tproxy instance
 
 			if err := s.backgroundProcessManager.KillBackgroundProcess(ctx, in.InstanceUid); err != nil {
 				// ignore this error
-				log.Error(err, "kill background process", "uid", in.InstanceUid)
+				logger.Error(err, "kill background process", "uid", in.InstanceUid)
 			}
 		}
 
@@ -103,7 +103,7 @@ func (s *DaemonServer) ApplyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaos
 	resp, err := s.applyHttpChaos(ctx, in)
 	if err != nil {
 		if killError := s.backgroundProcessManager.KillBackgroundProcess(ctx, in.InstanceUid); killError != nil {
-			log.Error(killError, "kill tproxy", "uid", in.InstanceUid)
+			logger.Error(killError, "kill tproxy", "uid", in.InstanceUid)
 		}
 		return nil, errors.Wrap(err, "apply config")
 	}
@@ -111,11 +111,11 @@ func (s *DaemonServer) ApplyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaos
 }
 
 func (s *DaemonServer) applyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaosRequest) (*pb.ApplyHttpChaosResponse, error) {
-	log := s.getLoggerFromContext(ctx)
+	logger := s.getLoggerFromContext(ctx)
 
 	pipes, ok := s.backgroundProcessManager.GetPipes(in.InstanceUid)
 	if !ok {
-		log.Error(errors.Errorf("fail to get process(%s)", in.InstanceUid), "in.InstanceUid", in.InstanceUid)
+		logger.Error(errors.Errorf("fail to get process(%s)", in.InstanceUid), "in.InstanceUid", in.InstanceUid)
 		return nil, errors.Errorf("fail to get process(%s)", in.InstanceUid)
 	}
 
@@ -128,10 +128,10 @@ func (s *DaemonServer) applyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaos
 	var rules []tproxyconfig.PodHttpChaosBaseRule
 	err := json.Unmarshal([]byte(in.Rules), &rules)
 	if err != nil {
-		log.Error(err, "unmarshal rules", "rules", in.Rules)
+		logger.Error(err, "unmarshal rules", "rules", in.Rules)
 		return nil, errors.Wrap(err, "unmarshal rules")
 	}
-	log.Info("the length of actions", "length", len(rules))
+	logger.Info("the length of actions", "length", len(rules))
 
 	httpChaosSpec := tproxyconfig.Config{
 		ProxyPorts: in.ProxyPorts,
@@ -148,35 +148,35 @@ func (s *DaemonServer) applyHttpChaos(ctx context.Context, in *pb.ApplyHttpChaos
 
 	config, err := json.Marshal(&httpChaosSpec)
 	if err != nil {
-		log.Error(err, "marshal config", "config", httpChaosSpec)
+		logger.Error(err, "marshal config", "config", httpChaosSpec)
 		return nil, err
 	}
 
-	log.Info("ready to apply", "config", string(config))
+	logger.Info("ready to apply", "config", string(config))
 
 	req, err := http.NewRequest(http.MethodPut, "/", bytes.NewReader(config))
 	if err != nil {
-		log.Error(err, "create http request")
+		logger.Error(err, "create http request")
 		return nil, errors.Wrap(err, "create http request")
 	}
 
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
-		log.Error(err, "send http request")
+		logger.Error(err, "send http request")
 		return nil, errors.Wrap(err, "send http request")
 	}
 
-	log.Info("http chaos applied")
+	logger.Info("http chaos applied")
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err, "read response body")
+		logger.Error(err, "read response body")
 		return nil, errors.Wrap(err, "read response body")
 	}
 
-	log.Info("response", "status", resp.StatusCode, "body", string(body))
+	logger.Info("response", "status", resp.StatusCode, "body", string(body))
 	return &pb.ApplyHttpChaosResponse{
-		Instance:    int64(in.Instance),
+		Instance:    in.Instance,
 		InstanceUid: in.InstanceUid,
 		StartTime:   in.StartTime,
 		StatusCode:  int32(resp.StatusCode),
