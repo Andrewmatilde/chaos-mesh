@@ -166,6 +166,8 @@ chaosDaemon:
   grpcPort: 31767
   # The port which http server listens on.
   httpPort: 31766
+  # Whether to create a cluster role for chaos-daemon
+  cluster_role: true
   # extra chaosDaemon envs
   env: {}
   # securityContext if needed
