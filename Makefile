@@ -294,6 +294,9 @@ bin/chaos-builder: SHELL:=$(RUN_IN_DEV_SHELL)
 bin/chaos-builder: images/dev-env/.dockerbuilt
 	$(CGOENV) go build -ldflags '$(LDFLAGS)' -buildvcs=false -o bin/chaos-builder ./cmd/chaos-builder/...
 
+generate-client:
+	client-gen --input="github.com/chaos-mesh/chaos-mesh/api/v1alpha1" --input-base="" --output-dir="./pkg/generated" --output-pkg="github.com/chaos-mesh/chaos-mesh/pkg/generated/" --clientset-name="versioned" --go-header-file="./hack/boilerplate/boilerplate.generatego.txt" --fake-clientset=true -v=2
+
 .PHONY: all image clean test manifests manifests/crd.yaml \
 	boilerplate tidy fmt vet lint install.sh \
 	config proto \

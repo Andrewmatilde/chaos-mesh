@@ -19,6 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +genclient
 // +kubebuilder:object:root=true
 // +chaos-mesh:experiment
 // +chaos-mesh:oneshot=in.Spec.Action==PodKillAction || in.Spec.Action==ContainerKillAction
