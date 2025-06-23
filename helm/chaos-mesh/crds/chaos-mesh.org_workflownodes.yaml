@@ -2886,6 +2886,7 @@ spec:
                     - pod-kill
                     - pod-failure
                     - container-kill
+                    - pod-budget-kill
                     type: string
                   containerNames:
                     description: |-
@@ -5890,6 +5891,7 @@ spec:
                         - pod-kill
                         - pod-failure
                         - container-kill
+                        - pod-budget-kill
                         type: string
                       containerNames:
                         description: |-
@@ -9375,6 +9377,7 @@ spec:
                                   - pod-kill
                                   - pod-failure
                                   - container-kill
+                                  - pod-budget-kill
                                   type: string
                                 containerNames:
                                   description: |-
@@ -12496,6 +12499,7 @@ spec:
                                       - pod-kill
                                       - pod-failure
                                       - container-kill
+                                      - pod-budget-kill
                                       type: string
                                     containerNames:
                                       description: |-

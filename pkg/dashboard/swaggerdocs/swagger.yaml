@@ -5475,7 +5475,7 @@ definitions:
           Action defines the specific pod chaos action.
           Supported action: pod-kill / pod-failure / container-kill
           Default action: pod-kill
-          +kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill
+          +kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill;pod-budget-kill
         type: string
       containerNames:
         description: |-

@@ -6970,7 +6970,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "action": {
-                    "description": "Action defines the specific pod chaos action.\nSupported action: pod-kill / pod-failure / container-kill\nDefault action: pod-kill\n+kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill",
+                    "description": "Action defines the specific pod chaos action.\nSupported action: pod-kill / pod-failure / container-kill\nDefault action: pod-kill\n+kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill;pod-budget-kill",
                     "type": "string"
                 },
                 "containerNames": {

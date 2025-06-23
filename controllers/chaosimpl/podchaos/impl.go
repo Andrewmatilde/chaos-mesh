@@ -20,6 +20,7 @@ import (
 
 	"github.com/chaos-mesh/chaos-mesh/api/v1alpha1"
 	"github.com/chaos-mesh/chaos-mesh/controllers/action"
+	"github.com/chaos-mesh/chaos-mesh/controllers/chaosimpl/podchaos/bugetpodkill"
 	"github.com/chaos-mesh/chaos-mesh/controllers/chaosimpl/podchaos/containerkill"
 	"github.com/chaos-mesh/chaos-mesh/controllers/chaosimpl/podchaos/podfailure"
 	"github.com/chaos-mesh/chaos-mesh/controllers/chaosimpl/podchaos/podkill"
@@ -32,6 +33,7 @@ type Impl struct {
 	PodKill       *podkill.Impl       `action:"pod-kill"`
 	PodFailure    *podfailure.Impl    `action:"pod-failure"`
 	ContainerKill *containerkill.Impl `action:"container-kill"`
+	PodBudgetKill *bugetpodkill.Impl  `action:"pod-budget-kill"`
 }
 
 func NewImpl(impl Impl) *impltypes.ChaosImplPair {

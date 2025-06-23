@@ -51,6 +51,8 @@ const (
 	PodFailureAction PodChaosAction = "pod-failure"
 	// ContainerKillAction represents the chaos action of killing the container
 	ContainerKillAction PodChaosAction = "container-kill"
+	// PodBudgetKillAction represents the chaos action of killing pods under budget.
+	PodBudgetKillAction PodChaosAction = "pod-budget-kill"
 )
 
 // PodChaosSpec defines the attributes that a user creates on a chaos experiment about pods.
@@ -60,7 +62,7 @@ type PodChaosSpec struct {
 	// Action defines the specific pod chaos action.
 	// Supported action: pod-kill / pod-failure / container-kill
 	// Default action: pod-kill
-	// +kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill
+	// +kubebuilder:validation:Enum=pod-kill;pod-failure;container-kill;pod-budget-kill
 	Action PodChaosAction `json:"action"`
 
 	// Duration represents the duration of the chaos action.
@@ -90,7 +92,7 @@ type PodChaosStatus struct {
 
 func (obj *PodChaos) GetSelectorSpecs() map[string]interface{} {
 	switch obj.Spec.Action {
-	case PodKillAction, PodFailureAction:
+	case PodKillAction, PodFailureAction, PodBudgetKillAction:
 		return map[string]interface{}{
 			".": &obj.Spec.PodSelector,
 		}
