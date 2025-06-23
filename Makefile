@@ -112,6 +112,9 @@ generate-deepcopy: images/dev-env/.dockerbuilt chaos-build ## Generate deepcopy 
 	cd ./api ;\
 		controller-gen object:headerFile=../hack/boilerplate/boilerplate.generatego.txt paths="./..." ;
 
+generate-client: ## Generate for client-gen
+	go generate ./...
+
 install.sh: SHELL:=$(RUN_IN_DEV_SHELL)
 install.sh: images/dev-env/.dockerbuilt ## Generate install.sh
 	./hack/update_install_script.sh
