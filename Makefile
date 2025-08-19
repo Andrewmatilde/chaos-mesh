@@ -121,6 +121,23 @@ generate-client:
 		--plural-exceptions=PodChaos:podchaos,HTTPChaos:httpchaos,IOChaos:iochaos,AWSChaos:awschaos,JVMChaos:jvmchaos,StressChaos:stresschaos,AzureChaos:azurechaos,PodHttpChaos:podhttpchaos,GCPChaos:gcpchaos,NetworkChaos:networkchaos,KernelChaos:kernelchaos,TimeChaos:timechaos,BlockChaos:blockchaos,PodIOChaos:podiochaos,PodNetworkChaos:podnetworkchaos \
 		-v=2
 
+generate-lister:
+	$(GO) tool lister-gen --output-dir=./pkg/lister \
+		--output-pkg=github.com/chaos-mesh/chaos-mesh/pkg/lister/ \
+		--go-header-file=./hack/boilerplate/boilerplate.generatego.txt \
+		--plural-exceptions=PodChaos:podchaos,HTTPChaos:httpchaos,IOChaos:iochaos,AWSChaos:awschaos,JVMChaos:jvmchaos,StressChaos:stresschaos,AzureChaos:azurechaos,PodHttpChaos:podhttpchaos,GCPChaos:gcpchaos,NetworkChaos:networkchaos,KernelChaos:kernelchaos,TimeChaos:timechaos,BlockChaos:blockchaos,PodIOChaos:podiochaos,PodNetworkChaos:podnetworkchaos \
+		-v=2 github.com/chaos-mesh/chaos-mesh/api/v1alpha1
+
+generate-informer:
+	$(GO) tool informer-gen \
+    	--output-dir=./pkg/informers \
+    	--output-pkg=github.com/chaos-mesh/chaos-mesh/pkg/informers \
+    	--versioned-clientset-package=github.com/chaos-mesh/chaos-mesh/pkg/client/versioned \
+    	--listers-package=github.com/chaos-mesh/chaos-mesh/pkg/lister \
+    	--go-header-file=./hack/boilerplate/boilerplate.generatego.txt \
+    	--plural-exceptions=PodChaos:podchaos,HTTPChaos:httpchaos,IOChaos:iochaos,AWSChaos:awschaos,JVMChaos:jvmchaos,StressChaos:stresschaos,AzureChaos:azurechaos,PodHttpChaos:podhttpchaos,GCPChaos:gcpchaos,NetworkChaos:networkchaos,KernelChaos:kernelchaos,TimeChaos:timechaos,BlockChaos:blockchaos,PodIOChaos:podiochaos,PodNetworkChaos:podnetworkchaos \
+    	github.com/chaos-mesh/chaos-mesh/api/v1alpha1
+
 install.sh: SHELL:=$(RUN_IN_DEV_SHELL)
 install.sh: images/dev-env/.dockerbuilt ## Generate install.sh
 	./hack/update_install_script.sh
