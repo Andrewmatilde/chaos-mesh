@@ -19,10 +19,11 @@ package internalinterfaces
 import (
 	time "time"
 
-	versioned "github.com/chaos-mesh/chaos-mesh/pkg/client/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"
+
+	versioned "github.com/chaos-mesh/chaos-mesh/pkg/client/versioned"
 )
 
 // NewInformerFunc takes versioned.Interface and time.Duration to return a SharedIndexInformer.

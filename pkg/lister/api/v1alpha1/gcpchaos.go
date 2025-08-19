@@ -17,10 +17,11 @@
 package v1alpha1
 
 import (
-	apiv1alpha1 "github.com/chaos-mesh/chaos-mesh/api/v1alpha1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	listers "k8s.io/client-go/listers"
 	cache "k8s.io/client-go/tools/cache"
+
+	apiv1alpha1 "github.com/chaos-mesh/chaos-mesh/api/v1alpha1"
 )
 
 // GCPChaosLister helps list Gcpchaos.
